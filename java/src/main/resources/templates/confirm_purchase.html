@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="gr__s3-ap-northeast-1_amazonaws_com">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0">
+    <meta name="google" content="notranslate" />
+    
+    <title>注文確認ページ：Amazon Payデモサイト</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="./css/shop-confirmation.css" rel="stylesheet">
+
+</head>
+
+<body data-gr-c-s-loaded="true">
+
+<!-- Page Content -->
+<div class="container">
+
+    <div class="row">
+
+        <!-- Blog Entries Column -->
+        <div class="col-md-8">
+
+            <h1 class="mt-4">確認画面</h1>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">ご注文内容</h5>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">商品名</th>
+                            <th scope="col">単価</th>
+                            <th scope="col" class="text-center">数量</th>
+                            <th scope="col" class="text-right">小計</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- AmazonPayController#thanksから受け取ったorder.itemsの情報を表示 -->
+                        <tr th:each="item : ${order.items}" th:object="${item}">
+                            <td><img class="confirmation-item" src="./img/item0010.jpg" th:src="|./img/*{itemId}.jpg|">
+                            </td>
+                            <td class="text-right" th:text="*{itemName}">コロンビア・ビルバオ コーヒー豆</td>
+                            <td class="text-right" th:text="|￥*{#numbers.formatInteger(price, 3, 'COMMA')}|">￥2,000</td>
+                            <td class="text-right" th:text="*{number}">2</td>
+                            <td class="text-right" th:text="|￥*{#numbers.formatInteger(summary, 3, 'COMMA')}|">￥4,000
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- AmazonPayController#thanksから受け取ったorderの情報を表示 -->
+                    <table class="table table-striped">
+                        <tbody>
+                        <tr>
+                            <td>問い合わせ番号</td>
+                            <td class="text-right" th:text="${order.myOrderId}">my-order-1234</td>
+                        </tr>
+                        <tr>
+                            <td>お届け先氏名</td>
+                            <td class="text-right" th:text="${order.destinationName}">甘存　一平</td>
+                        </tr>
+                        <tr>
+                            <td>お届け先郵便番号</td>
+                            <td class="text-right" th:text="${order.destinationPostalCode}">123-1234</td>
+                        </tr>
+                        <tr>
+                            <td>お届け先住所</td>
+                            <td class="text-right"
+                                th:text="${order.destinationStateOrRegion} + ${order.destinationCity} + ${order.destinationAddress1} + ' ' + ${order.destinationAddress2} + ' ' + ${order.destinationAddress3}">
+                                東京都目黒区3-3 さんま御殿 303号
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <button id="change_addr_pay" class="btn btn-info btn-lg btn-block">送付先・支払い方法変更</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Widgets Column -->
+        <div class="col-md-4">
+
+            <!-- Side Widget -->
+            <div class="card my-4">
+                <h5 class="card-header">お支払い金額</h5>
+                <div class="card-body" id="highlight2">
+
+                    <!-- AmazonPayController#thanksから受け取ったorderの情報を表示 -->
+                    <table class="table table-striped">
+                        <tbody>
+                        <tr>
+                            <td>商品合計</td>
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.price, 3, 'COMMA')}|">
+                                ￥4,000
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>税込金額</strong></td>
+                            <td class="text-right"><strong
+                                    th:text="|￥${#numbers.formatInteger(order.priceTaxIncluded, 3, 'COMMA')}|">￥4,320</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>送料</td>
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.postage, 3, 'COMMA')}|">
+                                ￥540
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>総合計</strong></td>
+                            <td class="text-right"><strong
+                                    th:text="|￥${#numbers.formatInteger(order.totalPrice, 3, 'COMMA')}|">￥4,860</strong>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <br/>
+                    
+                    <div>
+                        <div data-toggle="tooltip2" data-container="body" data-placement="top" data-html="true" title=""
+                             data-original-title="&lt;p&gt;みなさまのECサイトへの会員登録・メールマガジンの購読をお勧めすることも可能です。&lt;/p&gt;">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" checked=""> お客様情報を会員として登録する
+                                </label>
+                            </div>
+
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" checked=""> メールマガジンを購読する
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <form method="post" action="do_purchase" id="purchase_form">
+                            <!-- AmazonPayController#confirmOrderから受け取ったtokenの情報を埋め込む -->
+                            <input type="hidden" id="token" name="token" value="ecde72b9-3e10-45bf-ab45-a1833751c37b"
+                                   th:value="${token}">
+                            <input type="hidden" id="access_token" name="accessToken" th:value="${accessToken}">
+                            <input type="hidden" id="order_reference_id" name="orderReferenceId" th:value="${orderReferenceId}">
+                            <button id="purchase_button" class="btn btn-info btn-lg btn-block">購　入</button>
+                        </form>
+                    </div>
+
+                    <br>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+</div>
+<!-- /.container -->
+
+<script type="text/javascript">
+document.getElementById('change_addr_pay').addEventListener(
+    'click',
+    function() {
+        // Android: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、intentを送信してAmazonPayActivityを起動する.
+        [( ${os} == 'android' ? 'location.href = "intent://amazon_pay_host#Intent;package=com.amazon.pay.sample.android;scheme=amazon_pay_schema;S.token=' + ${token} + ';S.appKey=' + ${appKey} + ';S.showWidgets=true;end;";' )]
+
+        // iOS: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、WebViewController#viewDidLoadで登録された
+        // CallbackのWebViewController#userContentControllerを起動する.
+        [( ${os} == 'ios'     ? 'webkit.messageHandlers.jsCallbackHandler.postMessage({token: "' + ${token} + '", appKey: "' + ${appKey} + '"});' )]
+
+        // PC: 通常の画面遷移
+        [( ${os} == 'pc'   ? 'document.getElementById("other_form").submit();' )]
+    }
+);
+
+document.getElementById('purchase_button').addEventListener (
+    'click',
+    function() {
+        this.disabled = true;
+        document.getElementById('purchase_form').submit();
+    }
+);
+</script>
+
+</body>
+
+</html>

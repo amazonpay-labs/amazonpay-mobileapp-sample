@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en" class="gr__s3-ap-northeast-1_amazonaws_com">
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0">
+    <meta name="google" content="notranslate" />
+
+    <title>注文確認ページ：Amazon Payデモサイト</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="./css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="./css/shop-confirmation.css" rel="stylesheet">
+
+</head>
+
+<body data-gr-c-s-loaded="true">
+
+<!-- Page Content -->
+<div class="container">
+
+    <div class="row">
+
+        <!-- Blog Entries Column -->
+        <div class="col-md-8">
+
+            <h4>ご購入ありがとうございました。</h4>
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h5 class="card-title">ご注文内容</h5>
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th scope="col"></th>
+                            <th scope="col">商品名</th>
+                            <th scope="col">単価</th>
+                            <th scope="col" class="text-center">数量</th>
+                            <th scope="col" class="text-right">小計</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <!-- AmazonPayController#thanksから受け取ったorder.itemsの情報を表示 -->
+                        <tr th:each="item : ${order.items}" th:object="${item}">
+                            <td><img class="confirmation-item" src="./img/item0010.jpg" th:src="|./img/*{itemId}.jpg|">
+                            </td>
+                            <td class="text-right" th:text="*{itemName}">コロンビア・ビルバオ コーヒー豆</td>
+                            <td class="text-right" th:text="|￥*{#numbers.formatInteger(price, 3, 'COMMA')}|">￥2,000</td>
+                            <td class="text-right" th:text="*{number}">2</td>
+                            <td class="text-right" th:text="|￥*{#numbers.formatInteger(summary, 3, 'COMMA')}|">￥4,000
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                    <!-- AmazonPayController#thanksから受け取ったorderの情報を表示 -->
+                    <table class="table table-striped">
+                        <tbody>
+                        <tr>
+                            <td>問い合わせ番号</td>
+                            <td class="text-right" th:text="${order.myOrderId}">my-order-1234</td>
+                        </tr>
+                        <tr>
+                            <td>お届け先氏名</td>
+                            <td class="text-right" th:text="${order.destinationName}">甘存　一平</td>
+                        </tr>
+                        <tr>
+                            <td>お届け先郵便番号</td>
+                            <td class="text-right" th:text="${order.destinationPostalCode}">123-1234</td>
+                        </tr>
+                        <tr>
+                            <td>お届け先住所</td>
+                            <td class="text-right"
+                                th:text="${order.destinationStateOrRegion} + ${order.destinationCity} + ${order.destinationAddress1} + ' ' + ${order.destinationAddress2} + ' ' + ${order.destinationAddress3}">
+                                東京都目黒区3-3 さんま御殿 303号
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Sidebar Widgets Column -->
+        <div class="col-md-4">
+
+            <!-- Side Widget -->
+            <div class="card my-4">
+                <h5 class="card-header">お支払い金額</h5>
+                <div class="card-body" id="highlight2">
+
+                    <!-- AmazonPayController#thanksから受け取ったorderの情報を表示 -->
+                    <table class="table table-striped">
+                        <tbody>
+                        <tr>
+                            <td>商品合計</td>
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.price, 3, 'COMMA')}|">
+                                ￥4,000
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>税込金額</strong></td>
+                            <td class="text-right"><strong
+                                    th:text="|￥${#numbers.formatInteger(order.priceTaxIncluded, 3, 'COMMA')}|">￥4,320</strong>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>送料</td>
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.postage, 3, 'COMMA')}|">
+                                ￥540
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>総合計</strong></td>
+                            <td class="text-right"><strong
+                                    th:text="|￥${#numbers.formatInteger(order.totalPrice, 3, 'COMMA')}|">￥4,860</strong>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                    
+                    <br>
+
+                </div>
+            </div>
+
+            <!-- PCのブラウザからのアクセスの場合、Topボタンを表示する. -->
+            <form th:if="${os} == 'pc'" method="get" action="pc/order">
+                <input type="submit" value="Top" class="btn btn-info btn-lg btn-block"><br>
+            </form>
+
+        </div>
+
+    </div>
+    <!-- /.row -->
+
+</div>
+<!-- /.container -->
+
+</body>
+
+</html>

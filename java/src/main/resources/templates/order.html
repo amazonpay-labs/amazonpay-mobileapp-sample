@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0">
+    <meta name="google" content="notranslate"/>
+
+    <title>Amazon Pay Sample</title>
+    <!-- Bootstrap core CSS -->
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../css/shop-confirmation.css" rel="stylesheet">
+</head>
+<body data-gr-c-s-loaded="true">
+<div class="container">
+    <div class="row">
+
+        <!-- Blog Entries Column -->
+        <div class="col-md-8">
+
+            <div class="card mb-4">
+                <div class="card-body">
+                    <p id="error" class="text-danger"></p>
+                    <h5 class="card-title">購入画面</h5>
+                    <form id="orderForm" method="post" action="create_order">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th scope="col"></th>
+                                <th scope="col">商品名</th>
+                                <th scope="col">単価</th>
+                                <th scope="col" class="text-center">数量</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td><img class="confirmation-item" src="../img/item0008.jpg"></td>
+                                <td class="text-right">Fire HD8</td>
+                                <td class="text-right">￥8,980</td>
+                                <td class="text-right"><input type="text" id="hd8" name="hd8" value="1" class="form-control"></td>
+                            </tr>
+                            <tr>
+                                <td><img class="confirmation-item" src="../img/item0010.jpg"></td>
+                                <td class="text-right">Fire HD10</td>
+                                <td class="text-right">￥15,980</td>
+                                <td class="text-right"><input type="text" id="hd10" name="hd10" value="1" class="form-control"></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                        <input type="submit" value="購入手続きへ" class="btn btn-info btn-lg btn-block"><br>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    let numRegEx = /^(0|[1-9][0-9]*)$/;
+    document.getElementById('orderForm').addEventListener('submit', function(e) {
+        let hd8 = document.getElementById('hd8').value;
+        let hd10 = document.getElementById('hd10').value;
+        if(!numRegEx.test(hd8) || !numRegEx.test(hd10)) {
+            document.getElementById('error').textContent = '不正な数値です！';
+            e.preventDefault();
+        } else if(parseInt(hd8) <= 0 && parseInt(hd10) <= 0) {
+            document.getElementById('error').textContent = 'せめて一個は買ってください!';
+            e.preventDefault();
+        }
+    });
+</script>
+</body>
+</html>
