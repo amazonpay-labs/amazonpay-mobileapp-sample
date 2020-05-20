@@ -10,10 +10,10 @@
     <title>注文確認ページ：Amazon Payデモサイト</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="./css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="./css/shop-confirmation.css" rel="stylesheet">
+    <link href="/css/shop-confirmation.css" rel="stylesheet">
     <script type="text/javascript">
       function getURLParameter(name, source) {
           return decodeURIComponent((new RegExp('[?|&amp;|#]' + name + '=' +
@@ -69,8 +69,8 @@
                         </thead>
                         <tbody>
                         <!-- AmazonPayController#confirmOrderから受け取ったorder.itemsの情報を表示 -->
-                        <tr th:each="item : ${order.items}" th:object="${item}">
-                            <td><img class="confirmation-item" src="./img/item0010.jpg" th:src="|./img/*{itemId}.jpg|">
+                        <tr th:each="item : ${swSession.items}" th:object="${item}">
+                            <td><img class="confirmation-item" src="/img/item0010.jpg" th:src="|/img/*{itemId}.jpg|">
                             </td>
                             <td class="text-right" th:text="*{itemName}">コロンビア・ビルバオ コーヒー豆</td>
                             <td class="text-right" th:text="|￥*{#numbers.formatInteger(price, 3, 'COMMA')}|">￥2,000</td>
@@ -98,14 +98,14 @@
                         <tbody>
                         <tr>
                             <td>商品合計</td>
-                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.price, 3, 'COMMA')}|">
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(swSession.price, 3, 'COMMA')}|">
                                 ￥4,000
                             </td>
                         </tr>
                         <tr>
                             <td><strong>税込金額</strong></td>
                             <td class="text-right"><strong
-                                    th:text="|￥${#numbers.formatInteger(order.priceTaxIncluded, 3, 'COMMA')}|">￥4,320</strong>
+                                    th:text="|￥${#numbers.formatInteger(swSession.priceTaxIncluded, 3, 'COMMA')}|">￥4,320</strong>
                             </td>
                         </tr>
                         <tr>
@@ -137,16 +137,8 @@
                     </div>
 
                     <div>
-                        <form method="post" action="purchase" id="purchase_form">
-                            <!-- AmazonPayController#confirmOrderから受け取ったtokenの情報を埋め込む -->
-                            <input type="hidden" id="token" name="token" value="ecde72b9-3e10-45bf-ab45-a1833751c37b"
-                                   th:value="${token}">
-                            <input type="hidden" id="appToken" name="appToken" value="98a8593f-17a5-48b3-9d70-81af1c26c8e8"
-                                   th:value="${appToken}">
-                            <input type="hidden" id="access_token" name="accessToken">
-                            <input type="hidden" id="order_reference_id" name="orderReferenceId">
-                            <button id="purchase_button" class="btn btn-info btn-lg btn-block" disabled>購　入</button>
-                        </form>
+                        <a id="purchase_link" class="btn btn-info btn-lg btn-block" style="display:none;" href="https://amazon-pay-links-v2.s3-ap-northeast-1.amazonaws.com/index.html?secureWebviewSessionId=[[${secureWebviewSessionId}]]&old_secureWebviewSessionId=[[${old_secureWebviewSessionId}]]">購　入</a>
+                        <button id="purchase_button" class="btn btn-info btn-lg btn-block" disabled>購　入</button>
                     </div>
 
                     <br>
@@ -164,67 +156,78 @@
 
 <!-- Amazon Pay JavaScript -->
 <script type="text/javascript">
+    function enableButton() {
+        [( ${swSession.client} == 'androidApp' ?
+            'document.getElementById("purchase_button").style = "display:none;"; document.getElementById("purchase_link").style = "";'
+        )]
+        [( ${swSession.client} == 'iosApp' ?
+            'document.getElementById("purchase_button").style = "display:none;"; document.getElementById("purchase_link").style = "";'
+        )]
+        [( ${swSession.client} == 'browser' ?
+            'document.getElementById("purchase_button").disabled = false;'
+        )]
+    }
+
+    function disableButton() {
+        [( ${swSession.client} == 'androidApp' ?
+            'document.getElementById("purchase_button").style = ""; document.getElementById("purchase_link").style = "display:none;";'
+        )]
+        [( ${swSession.client} == 'iosApp' ?
+            'document.getElementById("purchase_button").style = ""; document.getElementById("purchase_link").style = "display:none;";'
+        )]
+        [( ${swSession.client} == 'browser' ?
+            'document.getElementById("purchase_button").disabled = true;'
+        )]
+    }
+
 //popup=trueにする場合
 //    var accessToken = getURLParameter("access_token", location.href);
 //popup=falseにする場合
     var accessToken = getURLParameter("access_token", location.hash);
+
     if (typeof accessToken === 'string' && accessToken.match(/^Atza/)) {
         console.log("Amazon Access Token :" + accessToken);
         document.cookie = "amazon_Login_accessToken=" + accessToken + ";path=/;secure";
-        document.getElementById('access_token').value = accessToken;
+        document.getElementById('purchase_link').href += '&access_token=' + accessToken;
     }
 
-      window.onAmazonLoginReady = function() {
+    window.onAmazonLoginReady = function() {
         // AmazonPayController#confirmOrderから受け取ったclientIdの情報を埋め込む
         amazon.Login.setClientId("[[${clientId}]]");
         amazon.Login.setUseCookie(true); //popup=falseにときに必要
+    };
 
-        if (accessToken) {
-          amazon.Login.retrieveProfile(accessToken, function (response){
-            if (response.success) {
-              console.log("Amazon Account Name :" + response.profile.Name);
-              console.log("Amazon Account Mail :" + response.profile.PrimaryEmail);
-              console.log("Amazon UserId :" + response.profile.CustomerId);
-            }
-          });
-        }
-      };
-
-      window.onAmazonPaymentsReady = function() {
+    window.onAmazonPaymentsReady = function() {
         showAddressBookWidget();
-      };
+    };
 
-      function showAddressBookWidget() {
-          // AddressBook
-          new OffAmazonPayments.Widgets.AddressBook({
+    let orderReferenceId = null;
+    function showAddressBookWidget() {
+        // AddressBook
+        new OffAmazonPayments.Widgets.AddressBook({
             // AmazonPayController#confirmOrderから受け取ったsellerIdの情報を埋め込む
             sellerId: '[[${sellerId}]]',
 
             onReady: function (orderReference) {
                 console.log(orderReference);
 
-                var orderReferenceId = orderReference.getAmazonOrderReferenceId();
+                orderReferenceId = orderReference.getAmazonOrderReferenceId();
+                document.getElementById('purchase_link').href += '&orderReferenceId=' + orderReferenceId;
+
                 // Wallet
-                document.getElementById('order_reference_id').value = orderReferenceId;
                 showWalletWidget(orderReferenceId);
             },
             onAddressSelect: function (addressBook) {
                 // お届け先の住所が変更された時に呼び出されます、ここで手数料などの再計算ができます。
 
-                document.getElementById('purchase_button').disabled = true;
-
-                console.log(addressBook);
-                console.log(addressBook.getContractId());
-                console.log(addressBook.getDestinationName());
-                console.log(addressBook.getDisplayMode());
-                console.log(addressBook.getID());
+                disableButton();
 
                 $.ajax({
                     url: 'calc_postage',
                     type: 'POST',
                     data: {
-                        "token": document.getElementById('token').value,
-                        "orderReferenceId": document.getElementById('order_reference_id').value,
+                        "secureWebviewSessionId": '[[${secureWebviewSessionId}]]',
+                        "orderReferenceId": orderReferenceId,
                         "accessToken": accessToken
                     }
                 })
@@ -234,7 +237,7 @@
                     document.getElementById('postage').textContent = data.postage;
                     document.getElementById('total_price').textContent = data.totalPrice;
 
-                    document.getElementById('purchase_button').disabled = false;
+                    enableButton();
                 });
             },
             design: {
@@ -246,81 +249,66 @@
                 // @see https://developer.amazon.com/ja/docs/amazon-pay-onetime/handling-widget-errors.html
                 console.log('OffAmazonPayments.Widgets.AddressBook', error.getErrorCode(), error.getErrorMessage());
                 switch (error.getErrorCode()) {
-                  case 'AddressNotModifiable':
-                      // オーダーリファレンスIDのステータスが正しくない場合は、お届け先の住所を変更することができません。
-                      break;
-                  case 'BuyerNotAssociated':
-                      // 購入者とリファレンスIDが正しく関連付けられていません。
-              　　　    // ウィジェットを表示する前に購入者はログインする必要があります。
-                      break;
-                  case 'BuyerSessionExpired':
-                      // 購入者のセッションの有効期限が切れました。
-         　　　　        // ウィジェットを表示する前に購入者はログインする必要があります。
-                      break;
-                  case 'InvalidAccountStatus':
-                      // マーチャントID（セラーID）がリクエストを実行する為に適切な状態ではありません。
-        　　　　         // 考えられる理由 ： 制限がかかっているか、正しく登録が完了されていません。
-                      break;
-                  case 'InvalidOrderReferenceId':
-                      // オーダーリファレンスIDが正しくありません。
-                      break;
-                  case 'InvalidParameterValue':
-                      // 指定されたパラメータの値が正しくありません。
-                      break;
-                  case 'InvalidSellerId':
-                      // マーチャントID（セラーID）が正しくありません。
-                      break;
-                  case 'MissingParameter':
-                      // 指定されたパラメータが正しくありません。
-                      break;
-                  case 'PaymentMethodNotModifiable':
-                      // オーダーリファレンスIDのステータスが正しくない場合はお支払い方法を変更することができません。
-                      break;
-                  case 'ReleaseEnvironmentMismatch':
-                      // 使用しているオーダーリファレンスオブジェクトがリリース環境と一致しません。
-                      break;
-                  case 'StaleOrderReference':
-                      // 使用しているオーダーリファレンスIDがキャンセルされています。
-                  　　　// キャンセルされたオーダーリファレンスIDでウィジェットを関連付けすることはできません。
-                      break;
-                  case 'UnknownError':
-                      // 不明なエラーが発生しました。(UnknownError)
-                      break;
-                  default:
-                      // 不明なエラーが発生しました。
+                    case 'AddressNotModifiable':
+                        // オーダーリファレンスIDのステータスが正しくない場合は、お届け先の住所を変更することができません。
+                        break;
+                    case 'BuyerNotAssociated':
+                        // 購入者とリファレンスIDが正しく関連付けられていません。
+                        　　　    // ウィジェットを表示する前に購入者はログインする必要があります。
+                        break;
+                    case 'BuyerSessionExpired':
+                        // 購入者のセッションの有効期限が切れました。
+                        　　　　        // ウィジェットを表示する前に購入者はログインする必要があります。
+                        break;
+                    case 'InvalidAccountStatus':
+                        // マーチャントID（セラーID）がリクエストを実行する為に適切な状態ではありません。
+                        　　　　         // 考えられる理由 ： 制限がかかっているか、正しく登録が完了されていません。
+                        break;
+                    case 'InvalidOrderReferenceId':
+                        // オーダーリファレンスIDが正しくありません。
+                        break;
+                    case 'InvalidParameterValue':
+                        // 指定されたパラメータの値が正しくありません。
+                        break;
+                    case 'InvalidSellerId':
+                        // マーチャントID（セラーID）が正しくありません。
+                        break;
+                    case 'MissingParameter':
+                        // 指定されたパラメータが正しくありません。
+                        break;
+                    case 'PaymentMethodNotModifiable':
+                        // オーダーリファレンスIDのステータスが正しくない場合はお支払い方法を変更することができません。
+                        break;
+                    case 'ReleaseEnvironmentMismatch':
+                        // 使用しているオーダーリファレンスオブジェクトがリリース環境と一致しません。
+                        break;
+                    case 'StaleOrderReference':
+                        // 使用しているオーダーリファレンスIDがキャンセルされています。
+                        　　　// キャンセルされたオーダーリファレンスIDでウィジェットを関連付けすることはできません。
+                        break;
+                    case 'UnknownError':
+                        // 不明なエラーが発生しました。(UnknownError)
+                        break;
+                    default:
+                        // 不明なエラーが発生しました。
                 }
             }
-          }).bind("addressBookWidgetDiv");
-      }
+        }).bind("addressBookWidgetDiv");
+    }
 
-      function showWalletWidget(orderReferenceId) {
-          // Wallet
-          new OffAmazonPayments.Widgets.Wallet({
+    function showWalletWidget(orderReferenceId) {
+        // Wallet
+        new OffAmazonPayments.Widgets.Wallet({
             // AmazonPayController#confirmOrderから受け取ったsellerIdの情報を埋め込む
             sellerId: '[[${sellerId}]]',
             amazonOrderReferenceId: orderReferenceId,
             onReady: function(orderReference) {
                 console.log(orderReference);
-                document.getElementById('purchase_button').disabled = false;
+
+                enableButton();
             },
             onPaymentSelect: function(orderReference) {
                 console.log(orderReference);
-                console.log(orderReference.getContractId());
-                console.log(orderReference.getDisplayMode());
-                console.log(orderReference.getID());
-                console.log(orderReference.getPaymentInstrumentsDisplayOptions());
-                console.log(orderReference.getPresentmentCurrency());
-
-                if (accessToken) {
-                  amazon.Login.retrieveProfile(accessToken, function (response){
-                    if (response.success) {
-                      console.log("Amazon Account Name :" + response.profile.Name);
-                      console.log("Amazon Account Mail :" + response.profile.PrimaryEmail);
-                      console.log("Amazon UserId :" + response.profile.CustomerId);
-                      console.log(response);
-                    }
-                  });
-                }
             },
             design: {
                 designMode: 'responsive'
@@ -331,17 +319,27 @@
                 // @see https://developer.amazon.com/ja/docs/amazon-pay-onetime/handling-widget-errors.html
                 console.log('OffAmazonPayments.Widgets.Wallet', error.getErrorCode(), error.getErrorMessage());
             }
-          }).bind("walletWidgetDiv");
-      }
+        }).bind("walletWidgetDiv");
+    }
 
-      document.getElementById('purchase_button').addEventListener(
-          'click',
-          function() {
-              this.disabled = true;
-              document.getElementById('purchase_form').submit();
-          }
-      );
-
+    document.getElementById('purchase_button').addEventListener(
+        'click',
+        function() {
+            $.ajax({
+                url: 'purchase',
+                type: 'POST',
+                data: {
+                    "secureWebviewSessionId": '[[${secureWebviewSessionId}]]',
+                    "orderReferenceId": orderReferenceId,
+                    "accessToken": accessToken
+                }
+            })
+            .done( (data) => {
+                console.log(data);
+                location.href = "/thanks?secureWebviewSessionId=[[${secureWebviewSessionId}]]";
+            });
+        }
+    );
 
 </script>
 

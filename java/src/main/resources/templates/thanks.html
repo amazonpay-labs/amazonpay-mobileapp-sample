@@ -28,7 +28,7 @@
         <div class="col-md-8">
 
             <h4>ご購入ありがとうございました。</h4>
-
+            <a th:href="'/' + ${swSession.client} + '/cart'">カートページに戻る</a><br>
             <div class="card mb-4">
                 <div class="card-body">
                     <h5 class="card-title">ご注文内容</h5>
@@ -44,7 +44,7 @@
                         </thead>
                         <tbody>
                         <!-- AmazonPayController#thanksから受け取ったorder.itemsの情報を表示 -->
-                        <tr th:each="item : ${order.items}" th:object="${item}">
+                        <tr th:each="item : ${swSession.items}" th:object="${item}">
                             <td><img class="confirmation-item" src="./img/item0010.jpg" th:src="|./img/*{itemId}.jpg|">
                             </td>
                             <td class="text-right" th:text="*{itemName}">コロンビア・ビルバオ コーヒー豆</td>
@@ -61,20 +61,20 @@
                         <tbody>
                         <tr>
                             <td>問い合わせ番号</td>
-                            <td class="text-right" th:text="${order.myOrderId}">my-order-1234</td>
+                            <td class="text-right" th:text="${swSession.myOrderId}">my-session-1234</td>
                         </tr>
                         <tr>
                             <td>お届け先氏名</td>
-                            <td class="text-right" th:text="${order.destinationName}">甘存　一平</td>
+                            <td class="text-right" th:text="${swSession.destinationName}">甘存　一平</td>
                         </tr>
                         <tr>
                             <td>お届け先郵便番号</td>
-                            <td class="text-right" th:text="${order.destinationPostalCode}">123-1234</td>
+                            <td class="text-right" th:text="${swSession.destinationPostalCode}">123-1234</td>
                         </tr>
                         <tr>
                             <td>お届け先住所</td>
                             <td class="text-right"
-                                th:text="${order.destinationStateOrRegion} + ${order.destinationCity} + ${order.destinationAddress1} + ' ' + ${order.destinationAddress2} + ' ' + ${order.destinationAddress3}">
+                                th:text="${swSession.destinationStateOrRegion} + ${swSession.destinationCity} + ${swSession.destinationAddress1} + ' ' + ${swSession.destinationAddress2} + ' ' + ${swSession.destinationAddress3}">
                                 東京都目黒区3-3 さんま御殿 303号
                             </td>
                         </tr>
@@ -99,26 +99,26 @@
                         <tbody>
                         <tr>
                             <td>商品合計</td>
-                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.price, 3, 'COMMA')}|">
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(swSession.price, 3, 'COMMA')}|">
                                 ￥4,000
                             </td>
                         </tr>
                         <tr>
                             <td><strong>税込金額</strong></td>
                             <td class="text-right"><strong
-                                    th:text="|￥${#numbers.formatInteger(order.priceTaxIncluded, 3, 'COMMA')}|">￥4,320</strong>
+                                    th:text="|￥${#numbers.formatInteger(swSession.priceTaxIncluded, 3, 'COMMA')}|">￥4,320</strong>
                             </td>
                         </tr>
                         <tr>
                             <td>送料</td>
-                            <td class="text-right" th:text="|￥${#numbers.formatInteger(order.postage, 3, 'COMMA')}|">
+                            <td class="text-right" th:text="|￥${#numbers.formatInteger(swSession.postage, 3, 'COMMA')}|">
                                 ￥540
                             </td>
                         </tr>
                         <tr>
                             <td><strong>総合計</strong></td>
                             <td class="text-right"><strong
-                                    th:text="|￥${#numbers.formatInteger(order.totalPrice, 3, 'COMMA')}|">￥4,860</strong>
+                                    th:text="|￥${#numbers.formatInteger(swSession.totalPrice, 3, 'COMMA')}|">￥4,860</strong>
                             </td>
                         </tr>
                         </tbody>
@@ -130,7 +130,7 @@
             </div>
 
             <!-- PCのブラウザからのアクセスの場合、Topボタンを表示する. -->
-            <form th:if="${os} == 'pc'" method="get" action="pc/order">
+            <form th:if="${os} == 'pc'" method="get" action="pc/session">
                 <input type="submit" value="Top" class="btn btn-info btn-lg btn-block"><br>
             </form>
 
@@ -138,6 +138,7 @@
 
     </div>
     <!-- /.row -->
+    <a th:href="'/' + ${swSession.client} + '/cart'">カートページに戻る</a>
 
 </div>
 <!-- /.container -->

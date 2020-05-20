@@ -23,12 +23,12 @@ public class TokenUtil {
 
     /**
      * tokenを生成し、パラメタの受注IDと紐付けてから返却する.
-     * @param order 受注Object
+     * @param session 受注Object
      * @return token
      */
-    public static String storeByToken(DatabaseMock.Order order) {
+    public static String storeByToken(DatabaseMock.SecureWebviewSession session) {
         String token = createToken();
-        CacheMock.put(token, order);
+        CacheMock.put(token, session);
         return token;
     }
 
@@ -37,7 +37,7 @@ public class TokenUtil {
      * @param token 受注Objectアクセス用のtoken
      * @return 受注Object
      */
-    public static DatabaseMock.Order get(String token) {
+    public static DatabaseMock.SecureWebviewSession get(String token) {
         return CacheMock.get(token);
     }
 

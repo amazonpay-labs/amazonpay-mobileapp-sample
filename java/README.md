@@ -114,7 +114,7 @@ Gradle Viewを開いて「Tasks」 →　「application」 →　「bootRun」�
 下記のようなログが表示されれば無事に起動しています。  
 ![intellij-page](img/intellij_log.png)
 
-試しに、https://localhost:8443/pc/order にアクセスしてみてください。セキュリティの警告が出ますが、無視して進めると下記画面が表示されるはずです。  
+試しに、https://localhost:8443/pc/session にアクセスしてみてください。セキュリティの警告が出ますが、無視して進めると下記画面が表示されるはずです。  
 ![intellij-page](img/intellij_browser.png)
 
 なお、本サンプルアプリはPC上のブラウザでも動作しますので、アプリの動作の確認や挙動の理解にご活用ください。

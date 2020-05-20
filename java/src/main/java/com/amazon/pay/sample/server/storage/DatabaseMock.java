@@ -3,11 +3,7 @@ package com.amazon.pay.sample.server.storage;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -42,14 +38,13 @@ public class DatabaseMock {
     }
 
     /**
-     * 受注Objectを保持するテーブルを想定したclass.
+     * SecureWebviewとアプリとのSessionを保持するテーブルを想定したclass.
      * Itemクラスのレコード(インスタンス)と１対多である.
      */
-    public static class Order implements Cloneable{
+    public static class SecureWebviewSession implements Cloneable{
         public String myOrderId;
         public String myOrderStatus;
-        public String appKey;
-        public String os;
+        public String client;
         public List<Item> items;
         public long price;
         public long priceTaxIncluded;
@@ -69,9 +64,9 @@ public class DatabaseMock {
         public String destinationPhone;
 
         @Override
-        public Order clone() {
+        public SecureWebviewSession clone() {
             try {
-                return (Order)super.clone();
+                return (SecureWebviewSession)super.clone();
             } catch (CloneNotSupportedException e) {
                 // Unreachable...
                 e.printStackTrace();
@@ -83,7 +78,7 @@ public class DatabaseMock {
     /**
      * Note: 本サンプルでは受注情報をメモリ上に保持するため、メモリが枯渇しないように念の為保持できる上限を定めている.
      */
-    private static final Cache<String, Order> cache = CacheBuilder.newBuilder()
+    private static final Cache<String, SecureWebviewSession> cache = CacheBuilder.newBuilder()
             .maximumSize(10000)
             .build();
 
@@ -92,16 +87,16 @@ public class DatabaseMock {
     /**
      * 受注Objectの保存.
      *
-     * @param order 受注Object
+     * @param session 受注Object
      * @return 受注ID
      */
-    public static String storeOrder(Order order) {
-        if (order.myOrderId == null) {
+    public static String storeSession(SecureWebviewSession session) {
+        if (session.myOrderId == null) {
             // 受注IDの採番
-            order.myOrderId = "my-order-" + atomicLong.incrementAndGet();
+            session.myOrderId = "my-order-" + atomicLong.incrementAndGet();
         }
-        cache.put(order.myOrderId, order);
-        return order.myOrderId;
+        cache.put(session.myOrderId, session);
+        return session.myOrderId;
     }
 
     /**
@@ -109,7 +104,7 @@ public class DatabaseMock {
      * @param myOrderId 受注ID
      * @return 受注Object
      */
-    public static Order getOrder(String myOrderId) {
+    public static SecureWebviewSession getOrder(String myOrderId) {
         return cache.getIfPresent(myOrderId);
     }
 

@@ -9,14 +9,26 @@
     <meta name="google" content="notranslate"/>
 
     <title>Amazon Pay Sample</title>
-
     <!-- Bootstrap core CSS -->
-    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="../css/shop-confirmation.css" rel="stylesheet">
+    <link href="/css/shop-confirmation.css" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <style type="text/css">
+    #filter {
+      width: 100%;
+      height: 100vh;
+      background-color: #fff;
+      position: relative;
+    }
+    </style>
+
 </head>
 <body data-gr-c-s-loaded="true">
+<div id="filter" style="display: none;"></div>
 <div class="container">
     <div class="row">
 
@@ -25,7 +37,8 @@
 
             <div class="card mb-4">
                 <div class="card-body">
-                    <h5 class="card-title">ご注文内容</h5>
+                    <p id="error" class="text-danger"></p>
+                    <h5 class="card-title">購入画面</h5>
                     <table class="table table-striped">
                         <thead>
                         <tr>
@@ -33,19 +46,20 @@
                             <th scope="col">商品名</th>
                             <th scope="col">単価</th>
                             <th scope="col" class="text-center">数量</th>
-                            <th scope="col" class="text-right">小計</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <!-- AmazonPayController#createOrderから受け取ったorder.itemsの情報を表示 -->
-                        <tr th:each="item : ${order.items}" th:object="${item}">
-                            <td><img class="confirmation-item" src="../img/item0010.jpg" th:src="|../img/*{itemId}.jpg|">
-                            </td>
-                            <td class="text-right" th:text="*{itemName}">コロンビア・ビルバオ コーヒー豆</td>
-                            <td class="text-right" th:text="|￥*{#numbers.formatInteger(price, 3, 'COMMA')}|">￥2,000</td>
-                            <td class="text-right" th:text="*{number}">2</td>
-                            <td class="text-right" th:text="|￥*{#numbers.formatInteger(summary, 3, 'COMMA')}|">￥4,000
-                            </td>
+                        <tr>
+                            <td><img class="confirmation-item" src="/img/item0008.jpg"></td>
+                            <td class="text-right">Fire HD8</td>
+                            <td class="text-right">￥8,980</td>
+                            <td class="text-right"><input type="text" id="hd8" name="hd8" value="1" class="form-control"></td>
+                        </tr>
+                        <tr>
+                            <td><img class="confirmation-item" src="/img/item0010.jpg"></td>
+                            <td class="text-right">Fire HD10</td>
+                            <td class="text-right">￥15,980</td>
+                            <td class="text-right"><input type="text" id="hd10" name="hd10" value="1" class="form-control"></td>
                         </tr>
                         </tbody>
                     </table>
@@ -54,30 +68,46 @@
         </div>
     </div>
     <div style="text-align:center">
-        <input type="image" src="../img/button_images/gold/medium/PwA.png" id="amzn_button">
+        <input type="image" src="/img/button_images/gold/medium/PwA.png" id="amzn_button">
     </div>
 </div>
-<form id="other_form" method="get" action="../button"><input type="hidden" name="token" th:value="${token}"></form>
 </body>
 <script type="text/javascript">
-document.getElementById('amzn_button').addEventListener(
-    'click',
-    function() {
+    let numRegEx = /^(0|[1-9][0-9]*)$/;
+    document.getElementById('amzn_button').addEventListener('click', function(e) {
+        let hd8 = document.getElementById('hd8').value;
+        let hd10 = document.getElementById('hd10').value;
+        if(!numRegEx.test(hd8) || !numRegEx.test(hd10)) {
+            document.getElementById('error').textContent = '不正な数値です！';
+        } else if(parseInt(hd8) <= 0 && parseInt(hd10) <= 0) {
+            document.getElementById('error').textContent = 'せめて一個は買ってください!';
+        } else {
+            $.ajax({
+                url: '/secureWebviewSession',
+                type: 'POST',
+                data: {
+                    client: "[[${client}]]",
+                    hd8: parseInt(hd8, 10),
+                    hd10: parseInt(hd10, 10)
+                }
+            })
+            .done( (data) => {
+                console.log(data);
+                openAmazonPay(data);
+            });
+        }
+    });
+
+    function openAmazonPay (data) {
         // Android: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、intentを送信してAmazonPayActivityを起動する.
-        [( ${os} == 'android' ? 'location.href = "intent://amazon_pay_host#Intent;package=com.amazon.pay.sample.android;scheme=amazon_pay_schema;S.token=' + ${token} + ';S.appKey=' + ${appKey} + ';end;";' )]
+        [( ${client} == 'androidApp' ? 'androidApp.handle(data.secureWebviewSessionId);' )]
 
         // iOS: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、WebViewController#viewDidLoadで登録された
         // CallbackのWebViewController#userContentControllerを起動する.
-        [( ${os} == 'ios'     ? 'webkit.messageHandlers.jsCallbackHandler.postMessage({token: "' + ${token} + '", appKey:"' + ${appKey} + '"});' )]
+        [( ${client} == 'iosApp'     ? 'webkit.messageHandlers.iosApp.postMessage(data);' )]
 
-        // iOS - UIWebView版: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、Custom URL Scheme(ディープリンク)を送信して、
-        // AppDelegate#applicationを起動する.
-        [( ${os} == 'ios-ui'     ? 'location.href = "amazonpay-mobile-sample-ios://ui-to-safari-view/?token=' + ${token} + '&appKey=' + ${appKey} + '";' )]
-
-        // PC: 通常の画面遷移
-        [( ${os} == 'pc'   ? 'document.getElementById("other_form").submit();' )]
+        // Browser: 通常の画面遷移
+        [( ${client} == 'browser'   ? 'location.href = "/button?secureWebviewSessionId=" + data.secureWebviewSessionId;' )]
     }
-);
-
 </script>
 </html>
