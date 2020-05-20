@@ -64,7 +64,6 @@ class ViewController: UIViewController {
         print("ViewController#jsCall")
         
         if(self.old_secureWebviewSessionId == old_secureWebviewSessionId) {
-            print("purchase('\(secureWebviewSessionId)', '\(accessToken)', '\(orderReferenceId)')")
             webView.evaluateJavaScript("purchase('\(secureWebviewSessionId)', '\(accessToken)', '\(orderReferenceId)')", completionHandler: nil)
         } else {
             webView.load(URLRequest(url: URL(string: "https://localhost:8443/error")!))
