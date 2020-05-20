@@ -137,7 +137,9 @@
                     </div>
 
                     <div>
-                        <a id="purchase_link" class="btn btn-info btn-lg btn-block" style="display:none;" href="https://amazon-pay-links-v2.s3-ap-northeast-1.amazonaws.com/index.html?secureWebviewSessionId=[[${secureWebviewSessionId}]]&old_secureWebviewSessionId=[[${old_secureWebviewSessionId}]]">購　入</a>
+                        <a id="purchase_link" class="btn btn-info btn-lg btn-block" style="display:none;"
+                           th:href="'https://amazon-pay-links.s3-ap-northeast-1.amazonaws.com/index.html?secureWebviewSessionId='
+                           + ${secureWebviewSessionId} + '&old_secureWebviewSessionId=' + ${old_secureWebviewSessionId}">購　入</a>
                         <button id="purchase_button" class="btn btn-info btn-lg btn-block" disabled>購　入</button>
                     </div>
 
@@ -188,7 +190,7 @@
     if (typeof accessToken === 'string' && accessToken.match(/^Atza/)) {
         console.log("Amazon Access Token :" + accessToken);
         document.cookie = "amazon_Login_accessToken=" + accessToken + ";path=/;secure";
-        document.getElementById('purchase_link').href += '&access_token=' + accessToken;
+        document.getElementById('purchase_link').href += '&accessToken=' + accessToken;
     }
 
     window.onAmazonLoginReady = function() {
@@ -326,7 +328,7 @@
         'click',
         function() {
             $.ajax({
-                url: 'purchase',
+                url: '/purchase',
                 type: 'POST',
                 data: {
                     "secureWebviewSessionId": '[[${secureWebviewSessionId}]]',

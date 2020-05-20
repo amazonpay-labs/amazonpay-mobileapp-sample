@@ -109,5 +109,23 @@
         // Browser: 通常の画面遷移
         [( ${client} == 'browser'   ? 'location.href = "/button?secureWebviewSessionId=" + data.secureWebviewSessionId;' )]
     }
+
+    function purchase(secureWebviewSessionId, accessToken, orderReferenceId) {
+        document.getElementById('filter').style.display = 'block';
+
+        $.ajax({
+            url: '/purchase',
+            type: 'POST',
+            data: {
+                "secureWebviewSessionId": secureWebviewSessionId,
+                "orderReferenceId": orderReferenceId,
+                "accessToken": accessToken
+            }
+        })
+        .done( (data) => {
+            console.log(data);
+            location.href = "/thanks?secureWebviewSessionId=" + secureWebviewSessionId;
+        });
+    }
 </script>
 </html>

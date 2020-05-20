@@ -227,13 +227,12 @@ public class AmazonPayController {
      * @param secureWebviewSessionId            受注Objectへのアクセス用token
      * @param accessToken      Amazon Pay側の情報にアクセスするためのToken. ボタンWidgetクリック時に取得する.
      * @param orderReferenceId Amazon Pay側の受注管理番号.
-     * @param model            画面生成templateに渡す値を設定するObject
      * @return 画面生成templateの名前. "cart"の時、「./src/main/resources/templates/cart.html」
      * @throws AmazonServiceException Amazon PayのAPIがthrowするエラー. 今回はサンプルなので特に何もしていないが、実際のコードでは正しく対処する.
      */
     @ResponseBody
     @PostMapping("/purchase")
-    public Map<String, String> purchase(@RequestParam String secureWebviewSessionId, @RequestParam String accessToken, @RequestParam String orderReferenceId, Model model) throws AmazonServiceException {
+    public Map<String, String> purchase(@RequestParam String secureWebviewSessionId, @RequestParam String accessToken, @RequestParam String orderReferenceId) throws AmazonServiceException {
         System.out.println("[purchase] " + secureWebviewSessionId +  ", " + orderReferenceId + ", " + accessToken);
 
         SecureWebviewSession session = TokenUtil.get(secureWebviewSessionId);
