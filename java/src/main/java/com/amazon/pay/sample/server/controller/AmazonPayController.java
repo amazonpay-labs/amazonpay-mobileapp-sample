@@ -103,7 +103,7 @@ public class AmazonPayController {
             swSession.items.add(new Item("item0010", "Fire HD10", hd10, 15980));
         }
         swSession.price = swSession.items.stream().mapToLong(item -> item.summary).sum();
-        swSession.priceTaxIncluded = (long) (1.08 * swSession.price);
+        swSession.priceTaxIncluded = (long) (1.1 * swSession.price);
 
         // sessionの保存
         DatabaseMock.storeSession(swSession);

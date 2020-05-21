@@ -124,21 +124,15 @@
                         </tbody>
                     </table>
                     
-                    <br>
-
                 </div>
             </div>
 
-            <!-- PCのブラウザからのアクセスの場合、Topボタンを表示する. -->
-            <form th:if="${os} == 'pc'" method="get" action="pc/session">
-                <input type="submit" value="Top" class="btn btn-info btn-lg btn-block"><br>
-            </form>
-
         </div>
+
+        <a th:href="'/' + ${swSession.client} + '/cart'">カートページに戻る</a><br>
 
     </div>
     <!-- /.row -->
-    <a th:href="'/' + ${swSession.client} + '/cart'">カートページに戻る</a>
 
 </div>
 <!-- /.container -->
