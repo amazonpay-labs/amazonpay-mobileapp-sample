@@ -66,7 +66,7 @@ public class AmazonPayController {
      * @return 画面生成templateの名前. "cart"の時、「./src/main/resources/templates/cart.html」
      */
     @GetMapping("/{client}/cart")
-    public String order(@PathVariable String client, Model model) {
+    public String cart(@PathVariable String client, Model model) {
         System.out.println("[cart] " + client);
 
         // 画面生成templateへの値の受け渡し

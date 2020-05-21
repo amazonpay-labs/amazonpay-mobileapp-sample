@@ -99,11 +99,10 @@
     });
 
     function openAmazonPay (data) {
-        // Android: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、intentを送信してAmazonPayActivityを起動する.
+        // Android
         [( ${client} == 'androidApp' ? 'androidApp.handle(data.secureWebviewSessionId);' )]
 
-        // iOS: AmazonPayController#createOrderから受け取ったtokenを埋め込んで、WebViewController#viewDidLoadで登録された
-        // CallbackのWebViewController#userContentControllerを起動する.
+        // iOS
         [( ${client} == 'iosApp'     ? 'webkit.messageHandlers.iosApp.postMessage(data);' )]
 
         // Browser: 通常の画面遷移

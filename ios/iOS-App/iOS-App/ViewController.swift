@@ -39,7 +39,7 @@ class ViewController: UIViewController {
             let webConfig = WKWebViewConfiguration();
             webConfig.userContentController = userContentController
             
-            // WebViewの生成、orderページの読み込み
+            // WebViewの生成、cartページの読み込み
             webView = WKWebView(frame: rect, configuration: webConfig)
             let webUrl = URL(string: "https://localhost:8443/iosApp/cart")!
             let myRequest = URLRequest(url: webUrl)
