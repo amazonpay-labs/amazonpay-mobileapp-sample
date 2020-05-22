@@ -230,7 +230,6 @@ Note: 上記はSwift5の場合。Swift4以前の場合は下記。
 ```
 
 なお、こちらのUniversal Linksにより上記コードが起動するのは、上にも書いたとおり「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」というURLのLinkをタップしたときだけで、JavaScriptなどでこのURLをloadしても起動しません。  
-※ 余談ですが、WebView上ではUniversal Linksは発動しません。  
 なので、本サンプルでは「ご注文手続き」画面にて、下記のようにCSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることでUniversal Linksを発動し、上記Nativeコードを起動しています。
 
 ```html
@@ -238,7 +237,9 @@ Note: 上記はSwift5の場合。Swift4以前の場合は下記。
 <a id="purchase_link" class="btn btn-info btn-lg btn-block" href="https://amazon-pay-links.s3-ap-northeast-1.amazonaws.com/index.html?secureWebviewSessionId=XXXX&old_secureWebviewSessionId=YYYY&accessToken=ZZZZ&orderReferenceId=S03-8186807-0189293">購　入</a>
 ```
 
-画面のFlowを本サンプルアプリから変更する場合には、こちらのUniversal Linksの制約を頭に入れて設計するようにして下さい。
+またもう一つ制約ですが、WebView上ではUniversal Linksは発動しません。  
+
+画面のFlowを本サンプルアプリから変更する場合には、これらのUniversal Linksの制約を頭に入れて設計するようにして下さい。
 
 
 ## その他の技術要素の詳細説明
@@ -248,7 +249,7 @@ Note: 上記はSwift5の場合。Swift4以前の場合は下記。
 アプリの仕様上可能であれば、このような面倒な処理は必要ではなく、単にAppDelegateから新しいControllerを起動して続きの処理が実行しても特に問題はないです。  
 
 しかし、React.jsやVue.js等で作られたSPA(Single Page Application)のように、一つのページ( or Controller)が状態を保持して全ての動作を実現しているようなタイプのアプリケーションでは、起動していた元のControllerに戻らないと続きの処理が実行できません。  
-そういったアプリケーションのことを考慮し、本サンプルアプリではわざと前に起動していたViewControllerに処理を戻すように実装しております。  
+そういったタイプのアプリケーションのことを考慮し、本サンプルアプリではわざと前に起動していたViewControllerに処理を戻すように実装しております。  
 ここでは、そのViewControllerへの戻り方について説明します。  
 
 ```swift

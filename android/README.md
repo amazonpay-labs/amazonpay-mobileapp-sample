@@ -153,7 +153,7 @@ WebViewを使わないNativeアプリにAmazon PayをIntegrationされる方は�
         tabsIntent.launchUrl(getApplicationContext(), Uri.parse("https://10.0.2.2:8443/button?secureWebviewSessionId=" + secureWebviewSessionId));
 ```
 
-なお、Androidでは一度開いたChrome Custom Tabsを後からProgramaticに閉じる方法が知られておらず、そのまま開くと再度Native & の処理を戻したときにもChrome Custom Tabsが残り続けてしまいます。  
+なお、Androidでは一度開いたChrome Custom Tabsを後からProgramaticに閉じる方法が知られておらず、そのまま開くと後でNativeに処理を戻したときにChrome Custom Tabsが残り続けてしまいます。  
 そのため、ここでは起動時に、  
 「別のActivityが起動したら、自動的に終了する」  
 というフラグを設定しています。
@@ -181,7 +181,7 @@ WebViewを使わないNativeアプリにAmazon PayをIntegrationされる方は�
 「OK」でAndroidManifest.xmlに次のようなintent-filterが追加されます。  
 ![androidstudio-welcome](img/applinks-5.png)
 
-アプリのインストール時・更新時に自動的にMappingがAndroidによって更新されるよう、下記のように「android:autoVerify="true"」という属性を手動で追加します。
+アプリのインストール時・更新時に自動的にMappingがAndroidによって更新されるよう、下記のように「android:autoVerify="true"」という属性を手動で追加します。  
 ![androidstudio-welcome](img/applinks-6.png)
 
 次に②の、「Select Activity」をクリックします。「Insert Code」をクリックすると、選択されたActivityにApplinksからの起動処理を受け取るロジックが追加されます。  
@@ -238,7 +238,6 @@ Emulator上での検証がOKなら、下記のように検証OKのメッセー�
 ```
 
 なお、Applinksが発動する条件はiOSの[Universal Links](https://github.com/amazonpay-labs/amazonpay-mobileapp-sample/tree/master/ios#sfsafariviewcontrollersecure-webview--native%E3%81%AE%E8%B5%B7%E5%8B%95)とよく似ており、基本的には「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」というURLのLinkをChrome Custom Tabs上でタップしたときで、JavaScriptなどでこのURLをloadしても起動しません。  
-※ 余談ですが、WebView上ではApplinksは発動しません。  
 なので、本サンプルでは「ご注文手続き」画面にて、下記のようにCSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることでUniversal Linksを発動し、上記Nativeコードを起動しています。  
 
 ```html
@@ -247,8 +246,9 @@ Emulator上での検証がOKなら、下記のように検証OKのメッセー�
 ```
 
 実験してみたところ、Universal Linksとは違ってRedirectした場合 ( = HTTP 302 が返却されるときのLocationヘッダに「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」を指定した場合) には発動するようでした。  
+またもう一つ制約ですが、WebView上ではApplinksは発動しません。  
 
-画面のFlowを本サンプルアプリから変更する場合には、こちらのApplinksの制約を頭に入れて設計するようにして下さい。  
+画面のFlowを本サンプルアプリから変更する場合には、これらのApplinksの制約を頭に入れて設計するようにして下さい。  
 
 ## その他の技術要素の詳細説明
 
@@ -322,7 +322,7 @@ AndroidのWebViewは制限がかなり多く、デフォルトの状態では本
 アプリの仕様上可能であれば、このような面倒な処理は必要ではなく、単にAmazonPayActivityから続きの処理が実行しても特に問題はないです。  
 
 しかし、React.jsやVue.js等で作られたSPA(Single Page Application)のように、一つのページ( or Activity)が状態を保持して全ての動作を実現しているようなタイプのアプリケーションでは、起動していた元のActivityに戻らないと続きの処理が実行できません。  
-そういったアプリケーションのことを考慮し、本サンプルアプリではわざと前に起動していたMainActivityに処理を戻すように実装しております。  
+そういったタイプのアプリケーションのことを考慮し、本サンプルアプリではわざと前に起動していたMainActivityに処理を戻すように実装しております。  
 ここでは、そのMainActivityへの戻り方について説明します。
 
 Androidでは、Intentなどを受け付けてActivityが起動する度に、今動いていたActivityの上に新しいActivityが被さって、一番上のActivityとなった新しいActivityが有効となって画面として表示されます。  

@@ -3,7 +3,6 @@
 
 ## 動作環境
 JavaSDK： Java 8 以上  
-Framework: Spring Boot 2.2.0M & Thymeleaf 3.0.11  
 
 ## 概要
 本Webアプリケーションでは、下記の処理を行っております。
