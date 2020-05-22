@@ -73,3 +73,34 @@ Gradle Viewを開いて「Tasks」 →　「application」 →　「bootRun」�
 ![intellij-page](img/intellij_browser.png)
 
 なお、本サンプルアプリはPC上のブラウザでも動作しますので、アプリの動作の確認や挙動の理解にご活用ください。
+
+## Security上の注意点
+本サンプルアプリでは、アプリ側とSecure WebView側でのデータのやり取りのため、secureWebviewSessionという名前のSessionを導入しています。  
+これを管理するためのIDとして、secureWebviewSessionIdというのをWebアプリケーション側で生成しています。  
+
+この生成部分のコードが下記になります。  
+```java
+    /**
+     * secureWebviewSessionアクセス用のsecureWebviewSessionIdを生成する.
+     * session IDは推測困難であることが求められるので、下記の要件を満たす必要がある.
+     * <ul>
+     *     <li>暗号論的に強度の高い擬似乱数生成器により生成された乱数部分を含んでいる</li>
+     *     <li>上記乱数部分の桁数が十分な長さである.(※一般的なSession IDの実装で128bit前後)</li>
+     * </ul>
+     * ここで採用しているUUID v4のJDKによる実装は上記を満たしている.
+     *   参考: https://docs.oracle.com/javase/jp/8/docs/api/java/util/UUID.html#randomUUID--
+     * もし別の実装を採用する場合には、上記を満たしているか確認すること.<br/>
+     * Note: UUID v4の乱数部分の仕様では、生成に暗号論的な強度が十分な乱数を使うことを推奨しているものの、
+     * 規定はしていない.
+     *   参考: https://tools.ietf.org/html/rfc4122#section-4.4
+     * つまり実装によっては推測可能な乱数生成方法を採用している可能性もある. よって、JDK以外のUUID v4の
+     * 実装の採用を検討する場合には乱数生成の暗号論的な強度が十分かを確認すること.
+     * @return 新しいsecureWebviewSessionId
+     */
+    public static String createToken() {
+        return UUID.randomUUID().toString();
+    }
+```
+
+少々コメントの内容が難しいですが、要するにSession IDを採番するときには、Security上推奨されているやり方に則って採番する必要がある、ということです。  
+推奨の方法は各プログラミング言語やFrameworkによっても違いますので、注意して実装してください。

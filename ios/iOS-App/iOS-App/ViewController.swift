@@ -13,8 +13,7 @@ import SafariServices
 class ViewController: UIViewController {
 
     var webView: WKWebView!
-    var old_secureWebviewSessionId: String?
-    var secureWebviewSessionId: String?
+    var old_secureWebviewSessionId: String? = ""
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)

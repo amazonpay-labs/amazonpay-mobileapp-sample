@@ -2,7 +2,7 @@
 SmartPhone上でAmazon Payを使って商品を購入するアプリの、サンプル実装です。  
 本サンプルアプリを参考にして様々なご実装のアプリにAmazon Payを簡単にカスタマイズして導入いただけるよう、アプリの構成は可能な限りシンプルに、また必要な技術要素を網羅して各々の技術の使い所・注意点をあわせて説明しております。
 
-Amazon PayではSecurityのためWebViewがサポート対象となっていないため、Amazon Payに関するAmazon Payボタン表示・Amazon Payへのログイン・住所選択ウィジェット＆支払い方法選択ウィジェットの表示などは、サポート対象となっている下記のブラウザ技術を使っています。  
+Amazon PayではSecurityのためWebViewがサポート対象となっていないため、Amazon Payに関するAmazon Payボタン表示・Amazon Payへのログイン・住所選択ウィジェット＆支払い方法選択ウィジェットの表示などは、サポート対象となっている下記のブラウザ技術を使っています。  
   * Android: Chrome Custom Tabs  
   * iOS: SFSafariViewController  
 

@@ -61,7 +61,7 @@ Installが完了します。
 
 あとはSimulator上でサンプルアプリを立ち上げて動作をご確認ください。
 
-## 各要素技術の詳細説明
+## WebView ←→ Native ←→ Secure WebViewの詳細説明
 
 ### WebView ←→ Native間の実装
 WebView内のJavaScriptとNativeコード(Swift/Objective-C)との間で、お互いの関数を呼び出す機能があるので、こちらを利用しております。  
@@ -229,7 +229,8 @@ Note: 上記はSwift5の場合。Swift4以前の場合は下記。
     }
 ```
 
-なお、こちらのUniversal Linksにより上記コードが起動するのは、上にも書いたとおり「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」というURLのLinkをタップしたときだけで、JavaScriptなどでこのURLをloadしても起動しません。
+なお、こちらのUniversal Linksにより上記コードが起動するのは、上にも書いたとおり「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」というURLのLinkをタップしたときだけで、JavaScriptなどでこのURLをloadしても起動しません。  
+※ 余談ですが、WebView上ではUniversal Linksは発動しません。  
 なので、本サンプルでは「ご注文手続き」画面にて、下記のようにCSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることでUniversal Linksを発動し、上記Nativeコードを起動しています。
 
 ```html
@@ -238,3 +239,124 @@ Note: 上記はSwift5の場合。Swift4以前の場合は下記。
 ```
 
 画面のFlowを本サンプルアプリから変更する場合には、こちらのUniversal Linksの制約を頭に入れて設計するようにして下さい。
+
+
+## その他の技術要素の詳細説明
+
+### 元のActivity(ページ)への処理の戻し方について
+本サンプルアプリではSFSafariViewからNativeを起動するとき、一旦AppDelegateで処理を受け付けてから、わざわざ前に起動していたViewControllerを検索して処理を戻してから、続きの処理を実行しています。  
+アプリの仕様上可能であれば、このような面倒な処理は必要ではなく、単にAppDelegateから新しいControllerを起動して続きの処理が実行しても特に問題はないです。  
+
+しかし、React.jsやVue.js等で作られたSPA(Single Page Application)のように、一つのページ( or Controller)が状態を保持して全ての動作を実現しているようなタイプのアプリケーションでは、起動していた元のControllerに戻らないと続きの処理が実行できません。  
+そういったアプリケーションのことを考慮し、本サンプルアプリではわざと前に起動していたViewControllerに処理を戻すように実装しております。  
+ここでは、そのViewControllerへの戻り方について説明します。  
+
+```swift
+// AppDelegate.swiftより抜粋(見やすくするため、一部加工しています。)
+            // 現在最前面のSFSafariViewとその裏のViewControllerを取得
+            var sfsv = UIApplication.shared.keyWindow?.rootViewController
+            var vc:ViewController? = nil
+            while (sfsv!.presentedViewController) != nil {
+                if let v = sfsv as? ViewController {
+                    vc = v
+                }
+                sfsv = sfsv!.presentedViewController
+            }
+            
+            (sfsv as? SFSafariViewController)?.dismiss(animated: false, completion: nil)
+            
+            vc?.jsCall("XXX", "YYY", "ZZZ")
+```
+
+iOSのControllerは、```UIApplication.shared.keyWindow?.rootViewController```を起点として、新しく起動する度に上に積み重ねられていき、一番上に乗っているControllerの処理が実行されて画面に表示される仕組みになっています。  
+上に乗っているControllerは```presentedViewController```に代入されており、一番上のControllerはこちらがnullとなります。  
+このコードが実行されるのはSFSafariViewからNativeが起動されたタイミングで、一番上には必ずSFSafariViewControllerがいます。  
+またその途中には必ず元々起動していた```ViewController```が存在しており、上記while文を実行することで```sfsv```にSFSafariViewControllerが、```vc```に元々起動していた```ViewController```が代入されます。  
+
+よって```sfsv.dismiss```を呼び出すことでSFSafariViewControllerを閉じて、```vc.jsCall```を呼び出すことで元々起動していた```ViewController```に次の処理を実行させることができます。
+
+
+
+
+## Security対策
+Note: こちらは、Android側の説明とほぼ同じ内容です。  
+
+本サンプルアプリで行われているSecurity対策は、下記の二つです。  
+(A) SFSafariView(Secure WebView)を開くとき、新しいsecureWebviewSessionIdを発番し、secureWebviewSessionを登録しなおす  
+(B) 上記で新しくされる前の古い方のsecureWebviewSessionIdをApp側で保持し、SFSafariView(Secure WebView)からNativeを起動するときにも送信してもらい一致判定を行う  
+
+それぞれ、何のための対策なのかを説明します。  
+
+まずは、下記の図を御覧ください。  
+![security](../java/img/security-crack.png)
+
+これは悪意を持ったユーザー（黒服の男）が、別のユーザ（右側の女性）に攻撃をしかける様子を示しています。  
+
+攻撃のシナリオは下記です。  
+(1) 黒服の男は自分の携帯端末を使ってSecure WebViewが起動するところまでオペレーションする。  
+(2) このとき携帯端末をPCにつないで開発者用ツールで監視するなどして、Secure WebViewが起動するURLを手に入れる。  
+(3) このURLにはsecureWebviewSessionが保存されているsecureWebviewSessionIdがURLパラメタとして付与されている。  
+(4) (2)で手に入れたURLを、Eメール等で攻撃対象の女性に送信する。Eメールを受け取った女性は、Eメールのリンクをクリックしてしまう。  
+(5) 女性の携帯端末がiPhone, iPadだった場合、通常はリンククリックによりSafariでページは開く。  
+(6) 女性はそのままChrome上でAmazon Payのログイン・購入などのオペレーションをしてしまう。  
+(7) このとき、女性のAmazonに登録されている個人情報が、secureWebviewSessionに保存される。  
+(8) 黒服の男はこのsecureWebviewSessionが保存されているsecureWebviewSessionIdを知っているので、女性の個人情報を盗み見たり、女性に変わってOperationすることができてしまう。  
+
+このような攻撃手法のことを、Session Fixationと呼びます。  
+この攻撃を防ぐためには、女性が個人情報を保存するsecureWebviewSessionのsecureWebviewSessionIdを、黒服の男が知らない状態にする必要があります。  
+そのため上記(A)のように、Secure WebViewが開いたらすぐ新しいsecureWebviewSessionIdを発番し、secureWebviewSessionを登録しなおす必要があるのです。  
+これを行っているコードが、Webアプリケーション側の下記になります。  
+
+```java
+// Webアプリケーション側のコードの、AmazonPayController.javaより抜粋。
+
+        // redirect処理でconfirm_orderに戻ってきたときにtokenが使用できるよう、Cookieに登録
+        // Note: Session Fixation 対策に、tokenをこのタイミングで更新する.
+        Cookie cookie = new Cookie("secureWebviewSessionId", TokenUtil.copy(secureWebviewSessionId));
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+
+        // 更新前のtokenも、APPに戻ったタイミングでの確認用に保持する
+        cookie = new Cookie("old_secureWebviewSessionId", secureWebviewSessionId);
+        cookie.setSecure(true);
+        response.addCookie(cookie);
+```
+
+また、この女性が購入ボタンを押した後ですが、何が起こるでしょうか？  
+通常は何も起こりませんが、もし女性がたまたま同じアプリをインストールしていた場合には、Universal LinksはSFSafariViewだけではなくSafariでも発動してしまうため、アプリが正常に起動して続きの処理が実行されて、購入が完了してしまう可能性があります。  
+もちろん、女性は自分のAmazonアカウントにログインしていますし、ちゃんと確認画面をみてから購入ボタンを押しているはずではありますが、不正なフローで購入が成功してしまうのは本来は好ましい挙動ではありません。  
+
+これを防ぐための対策が上記(B)です。  
+古い方のsecureWebviewSessionIdが保持されているのは黒服の男の携帯端末のアプリで、女性の方には保持されていません。  
+よって、この一致判定の結果が不一致だったら、不正なフローだったと判断することができます。  
+
+古い方のsecureWebviewSessionIdをApp側で保持する処理が、下記です。  
+```swift
+// ViewController.swiftより抜粋。
+            :
+    var old_secureWebviewSessionId: String? = ""
+            :
+    func invokeButtonPage(_ secureWebviewSessionId: String) {
+        print("ViewController#invokeButtonPage")
+        
+        old_secureWebviewSessionId = secureWebviewSessionId // ← ここで保持している
+        let safariView = SFSafariViewController(url: NSURL(string: "https://localhost:8443/button?secureWebviewSessionId=\(secureWebviewSessionId)")! as URL)
+        present(safariView, animated: true, completion: nil)
+    }
+            :
+```
+
+そして、これの一致判定を行っているのが、下記になります。  
+```swift
+// ViewController.swiftより抜粋。(見やすくするため、一部加工しています。)
+
+    func jsCall(_ secureWebviewSessionId: String, _ old_secureWebviewSessionId: String, _ accessToken: String, _ orderReferenceId: String) {
+        print("ViewController#jsCall")
+        
+        if(self.old_secureWebviewSessionId == old_secureWebviewSessionId) { // ← ここで判定
+            webView.evaluateJavaScript("purchase('XXX', 'YYY', 'ZZZ')", completionHandler: nil)
+        } else {
+            webView.load(URLRequest(url: URL(string: "https://localhost:8443/error")!)) // ← 不一致の場合はエラー画面に遷移
+        }
+    }
+```

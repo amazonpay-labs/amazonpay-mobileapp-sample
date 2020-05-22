@@ -60,11 +60,11 @@ public class TokenUtil {
     }
 
     /**
-     * 受注Objectアクセス用のtokenを生成する.
-     * tokenは推測困難であることが求められるので、下記の要件を満たす必要がある.
+     * secureWebviewSessionアクセス用のsecureWebviewSessionIdを生成する.
+     * session IDは推測困難であることが求められるので、下記の要件を満たす必要がある.
      * <ul>
      *     <li>暗号論的に強度の高い擬似乱数生成器により生成された乱数部分を含んでいる</li>
-     *     <li>上記乱数部分の桁数が十分な長さである.(※一般的なSessionID・tokenの実装で128bit前後)</li>
+     *     <li>上記乱数部分の桁数が十分な長さである.(※一般的なSession IDの実装で128bit前後)</li>
      * </ul>
      * ここで採用しているUUID v4のJDKによる実装は上記を満たしている.
      *   参考: https://docs.oracle.com/javase/jp/8/docs/api/java/util/UUID.html#randomUUID--
@@ -74,7 +74,7 @@ public class TokenUtil {
      *   参考: https://tools.ietf.org/html/rfc4122#section-4.4
      * つまり実装によっては推測可能な乱数生成方法を採用している可能性もある. よって、JDK以外のUUID v4の
      * 実装の採用を検討する場合には乱数生成の暗号論的な強度が十分かを確認すること.
-     * @return 受注Objectアクセス用のtoken
+     * @return 新しいsecureWebviewSessionId
      */
     public static String createToken() {
         return UUID.randomUUID().toString();

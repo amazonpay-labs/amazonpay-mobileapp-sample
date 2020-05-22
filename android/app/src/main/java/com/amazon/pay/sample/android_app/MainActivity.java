@@ -21,7 +21,7 @@ public class MainActivity extends AppCompatActivity {
 
     private WebView webView;
 
-    private String old_secureWebviewSessionId = null;
+    private String old_secureWebviewSessionId = "";
 
     @Override
     @SuppressLint("SetJavaScriptEnabled")
