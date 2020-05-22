@@ -1,42 +1,5 @@
-HELP.md
-.gradle
-/build/
-!gradle/wrapper/gradle-wrapper.jar
-
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-/out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
 ### VS Code ###
 .vscode/
 
 ### Mac ###
 .DS_store
-
-### Secret property ###
-src/main/resources/merchant.properties
-
-### Secret key & crt ###
-src/main/resources/static/crt/sample.crt
-src/main/resources/static/crt/sample.der.crt
-ssl/sample.key
-ssl/sample.p12

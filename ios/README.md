@@ -111,7 +111,7 @@ extension ViewController: WKScriptMessageHandler {
 
 このようにして登録したJavaScript用のMessage Handler「iosApp」に対しては、下記のようにメッセージを送信できます。
 ```js
-// Template EngineのThymeleafにより生成される部分なので分かりづらいですが、cart.htmlの「openAmazonPay」関数からの抜粋です。
+// cart.htmlの「openAmazonPay」関数から抜粋(見やすくするため、一部加工しています。)
 
     function openAmazonPay (data) {
             :
@@ -134,7 +134,7 @@ extension ViewController: WKScriptMessageHandler {
 
 あとは、Native側で下記のように「evaluateJavaScript」というWKWebViewのメソッドに呼び出すJavaScriptのコードを渡すことで、呼び出すことができます。
 ```swift
-// ViewController.swiftより抜粋(見やすくするため、一部修正しています。)
+// ViewController.swiftより抜粋(見やすくするため、一部加工しています。)
             webView.evaluateJavaScript("purchase('XXXXX', 'YYYYY', 'ZZZZZ')", completionHandler: nil)
 ```
 
@@ -153,13 +153,13 @@ WebViewを使わないNativeアプリにAmazon PayをIntegrationされる方は�
 
 #### SFSafariViewController(Secure WebView) → Nativeの起動
 おそらく、ここが一番の難関です。  
-こちらを実現できる技術として、CustomURLSchemeというアプリ専用のSchemaを登録してiOSから起動してもらうものがあるのですが、こちらは全く同じSchemaで起動する
+ブラウザからアプリを起動できる技術として、CustomURLSchemeというアプリ専用のSchemaを登録してiOSから起動してもらうものがあるのですが、こちらは全く同じSchemaで起動する
 悪意のあるアプリを完全に排除する方法がないため、センシティブなデータの受け渡しを伴うアプリの起動には不向きです。  
 
 そこで、Universal Linksというものを使います。  
 こちらは特定のURLのLinkがSafari上でタップされたときに登録されたアプリを起動できる機能なのですが、そのURLとアプリとのMapping情報を自分が管理するServer上に置くことができるため、そのServerがクラックされない限りは悪意のあるアプリが間違って起動されてしまう心配はありません。  
 
-まずは、URLとアプリとのMappingを行うJSONファイルを作成します。
+まずは、URLとアプリとのMappingを行うJSONファイルを作成します。  
 
 ```json
 {
@@ -217,7 +217,24 @@ Xcodeで「Signing & Capabilities」を開き、左上の「+ Capability」か�
     }
 ```
 
+Note: 上記はSwift5の場合。Swift4以前の場合は下記。
+```swift
+    func application(_ application: UIApplication, continue userActivity: NSUserActivity, restorationHandler: @escaping ([Any]?) -> Void) -> Bool {
+        print("Universal Links!")
+        if userActivity.activityType == NSUserActivityTypeBrowsingWeb {
+            print(userActivity.webpageURL!)
+                :
+        }
+        return true;
+    }
+```
+
 なお、こちらのUniversal Linksにより上記コードが起動するのは、上にも書いたとおり「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」というURLのLinkをタップしたときだけで、JavaScriptなどでこのURLをloadしても起動しません。
-なので、本サンプルでは「ご注文手続き」画面にて、CSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることで、Universal Linksにより上記Nativeコードを起動しています。
+なので、本サンプルでは「ご注文手続き」画面にて、下記のようにCSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることでUniversal Linksを発動し、上記Nativeコードを起動しています。
+
+```html
+<!-- confirm_order.htmlより抜粋(見やすくするため、一部加工しています。) -->
+<a id="purchase_link" class="btn btn-info btn-lg btn-block" href="https://amazon-pay-links.s3-ap-northeast-1.amazonaws.com/index.html?secureWebviewSessionId=XXXX&old_secureWebviewSessionId=YYYY&accessToken=ZZZZ&orderReferenceId=S03-8186807-0189293">購　入</a>
+```
 
 画面のFlowを本サンプルアプリから変更する場合には、こちらのUniversal Linksの制約を頭に入れて設計するようにして下さい。
