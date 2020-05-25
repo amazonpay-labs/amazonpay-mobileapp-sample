@@ -238,7 +238,7 @@ Emulator上での検証がOKなら、下記のように検証OKのメッセー�
 ```
 
 なお、Applinksが発動する条件はiOSの[Universal Links](https://github.com/amazonpay-labs/amazonpay-mobileapp-sample/tree/master/ios#sfsafariviewcontrollersecure-webview--native%E3%81%AE%E8%B5%B7%E5%8B%95)とよく似ており、基本的には「https://{'apple-app-site-association'を配置したサーバーのドメイン}」/...」というURLのLinkをChrome Custom Tabs上でタップしたときで、JavaScriptなどでこのURLをloadしても起動しません。  
-なので、本サンプルでは「ご注文手続き」画面にて、下記のようにCSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることでUniversal Linksを発動し、上記Nativeコードを起動しています。  
+なので、本サンプルでは「ご注文手続き」画面にて、下記のようにCSSを使ってボタンに見せかけた「購入」のリンクをユーザにタップさせることでApplinksを発動し、上記Nativeコードを起動しています。  
 
 ```html
 <!-- confirm_order.htmlより抜粋(見やすくするため、一部加工しています。) -->
