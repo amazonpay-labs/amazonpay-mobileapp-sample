@@ -1,4 +1,4 @@
-# こちらのサンプルアプリは「非推奨」となりました。 (2021/07/02)
+# 本サンプルアプリは「非推奨」となりました。 (2021/07/02)
 [Amazon Pay Checkout v2(CV2)](https://developer.amazon.com/ja/docs/amazon-pay/intro.html)がReleaseされ、こちらのサンプルアプリが対象としている[Amazon Pay CV1](https://amazonpaylegacyintegrationguide.s3.amazonaws.com/docs/ja/amazon-pay/intro.html)は旧バージョンとなりました。  
 それに伴い、本サンプルアプリも今後は更新を停止し、非推奨の扱いとさせていただきます。  
 今後はCV2を対象とする[こちらのサンプルアプリ](https://github.com/amazonpay-labs/amazonpay-sample-application-v2)をご参照下さい。  
